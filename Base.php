@@ -32,6 +32,8 @@ function http_get($url){
     curl_setopt($oCurl, CURLOPT_URL, $url);
     curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );
     curl_setopt($oCurl, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($oCurl, CURLOPT_CUSTOMREQUEST, 'GET');
+    curl_setopt($oCurl, CURLOPT_AUTOREFERER, true);
     $sContent = curl_exec($oCurl);
     $aStatus = curl_getinfo($oCurl);
     curl_close($oCurl);
@@ -168,10 +170,7 @@ function get_mp_notice($url = 'https://mp.weixin.qq.com/cgi-bin/announce?action=
         preg_match($search,$data,$arr);
         $str = isset($arr[1])?$arr[1]:'';
         if (!stripos($str,'</li>') || !isset($arr[1])) {
-            var_dump($arr);
             $next_page = false;
-            //echo "当前到第 $page_num 页，无法进行下去了";
-            //break;
         }
         $str = str_replace("</li>","</li>\r\n",$str);
         preg_match_all($ss,$str,$arr2,PREG_SET_ORDER);
@@ -183,7 +182,7 @@ function get_mp_notice($url = 'https://mp.weixin.qq.com/cgi-bin/announce?action=
                         'url' => ((substr($li[1],0,1)=='/')?$url_base:((substr($li[1],0,1)=='.')?$url_base.$tmp_arr['path']:'')).$li[1]
                 );
         }
-        unset($data);
+        //unset($data);
         unset($str);
         unset($arr);
         unset($arr2);
@@ -192,6 +191,7 @@ function get_mp_notice($url = 'https://mp.weixin.qq.com/cgi-bin/announce?action=
     //}
     if (isset($list) && count($list)>0)
         return $list;
+    echo "MP平台公告页面好像又读取失败了 = .=<br>";
     return false;
 }
 
@@ -307,11 +307,14 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         Git::windows_mode();
     }
     if (!file_exists($path.'.git')) {
-        echo date("Y-m-d H:i:s") . " 未创建git库，将创建<br><br>";
+        echo date("Y-m-d H:i:s") . " 没有git库，尝试创建...<br>";
         if ($remote_git){            //是否设置了远程仓库
-            $ret=Git::clone_remote($path,$remote_git,true,$remote_branch); //从远程仓库clone(可指定分支)
-            if (!Git::is_repo($ret))
+            echo "尝试从远程仓库克隆数据...<br>";
+            $ret=Git::clone_remote($path,$remote_git,$remote_branch); //从远程仓库clone(可指定分支)
+            if (!Git::is_repo($ret)){
+                echo "从远程仓库克隆失败，本地创建...<br>";
                 $ret=Git::create($path); //如果clone失败，则本地创建
+            }
         } else
             $ret=Git::create($path); //直接本地创建
         echo date("Y-m-d H:i:s") . " 创建结果：".(Git::is_repo($ret)?'成功':'失败')."<br>";
@@ -341,6 +344,12 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
     if ($no_commit) {
         echo " 未检测到更新，共计用时：".(time()-$stime)."秒<br>";
     } else {
+        if ($count<2) {
+            echo "由于公告页面可能读取失败，等待下次检测。<br>";
+            @unlink($file_lock);
+            $repo->checkout(".");      //撤销所有修改
+            return false;
+        }
         echo "待更新内容：<hr>".$ret."<hr>";
         $ret0 = $repo->add();
         $repo->run('config --global user.email "'.GIT_EMAIL.'"');//git config --global user.email "you@example.com"
@@ -405,11 +414,14 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         Git::windows_mode();
     }
     if (!file_exists($path.'.git')) {
-        echo date("Y-m-d H:i:s") . " 未创建git库，将创建<br><br>";
+        echo date("Y-m-d H:i:s") . " 没有git库，尝试创建...<br>";
         if ($remote_git){            //是否设置了远程仓库
-            $ret=Git::clone_remote($path,$remote_git,true,$remote_branch); //从远程仓库clone(可指定分支)
-            if (!Git::is_repo($ret))
+            echo "尝试从远程仓库克隆数据...<br>";
+            $ret=Git::clone_remote($path,$remote_git,$remote_branch); //从远程仓库clone(可指定分支)
+            if (!Git::is_repo($ret)){
+                echo "从远程仓库克隆失败，本地创建...<br>";
                 $ret=Git::create($path); //如果clone失败，则本地创建
+            }
         } else
             $ret=Git::create($path); //直接本地创建
         echo date("Y-m-d H:i:s") . " 创建结果：".(Git::is_repo($ret)?'成功':'失败')."<br>";

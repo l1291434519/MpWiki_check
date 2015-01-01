@@ -94,8 +94,8 @@ class Git {
 	 * @param   string  remote source
 	 * @return  GitRepo
 	 **/
-	public static function &clone_remote($repo_path, $remote) {
-		return GitRepo::create_new($repo_path, $remote, true);
+	public static function &clone_remote($repo_path, $remote, $remote_branch='') {
+		return GitRepo::create_new($repo_path, $remote, true, $remote_branch);
 	}
 
 	/**
@@ -286,6 +286,7 @@ class GitRepo {
 		} else {
 			$env = array_merge($_ENV, $this->envopts);
 		}
+		$env = NULL;
 		$cwd = $this->repo_path;
 		$resource = proc_open($command, $descriptorspec, $pipes, $cwd, $env);
 
