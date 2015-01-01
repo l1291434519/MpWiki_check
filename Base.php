@@ -103,25 +103,14 @@ function get_list($url) {
     </div>
     </div>
     */
-    //$search='/<!--.panel.-->(.*)<!--.\/panel.-->/s';
-    //$search='/<div id=\"mw-panel\" class=\"[a-z\-]*\">(.*)<!--.\/panel.-->/s';
-    //$search='/<div id=\"mw-panel\"[^>]*>(.*)(<!-- \/panel -->)*\s<!-- (content|footer)[^-div]?-->\s/s';
+
     $search='/<div id=\"mw-panel\"[^>]*>(.*)<div id=\"(footer|content)\"/s';
     preg_match($search,$data,$arr);                         //获取左菜单列
     $str=isset($arr[1])?$arr[1]:'';
-
-    //var_dump($arr);
-    //echo "\n<br>\n<br><hr>\n<br>\n<br>";
-    //var_dump($str);
-    //if (!$str) var_dump($data);
-    //echo "\n<br>\n<br><hr>\n<br>\n<br>";
     $arr = explode('</div>',$str);
-    //$ss = '/<\/div>/';   // 使用 <!-- /基础支持 --> 进行分割
-    //$arr = preg_split($ss, $str, -1, PREG_SPLIT_DELIM_CAPTURE);               //分割菜单主项
     foreach ($arr as $str) {
         if (!stripos($str,'portal')) continue;
         $sq=preg_match_all($s1,$str,$arr,PREG_SET_ORDER);                              //解析菜单主项
-        //var_dump($arr);
         $tmp=array();
         if (isset($arr[0]) && count($arr[0])>3) {
             $tmp['p']=$arr[0][1];
@@ -498,7 +487,9 @@ function send_mail($path,$mail_lock,$subject) {
         $smtppass = isset($_ENV["SMTP_PASS"])?$_ENV["SMTP_PASS"]:"";//SMTP服务器的用户密码
         $mailtype = "HTML";//邮件格式（HTML/TXT）,TXT为文本邮件
         $mailsubject = "监测通知：微信公众平台WIKI更新";//邮件主题
-        $mailbody = "<h1> 更新内容为： </h1>"."git日志内容如下：<br><hr>".nl2br(htmlspecialchars($ret_text));//邮件内容
+        $mailbody = "<h1> 更新内容为： </h1>"."git日志内容如下：<br><hr>".
+                    nl2br(htmlspecialchars(substr($ret_text,stripos($ret_text,"\ndiff --git")))).
+                    "<br><hr>更多内容，请参看附件".$tmp_file;//邮件内容
         ##########################################
 
         if (!$smtpuser) {
