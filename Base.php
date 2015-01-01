@@ -249,12 +249,12 @@ function get_content($url,$search = '/class=\"bodyContent\">(.*)<div class=\"pri
     return false;
 }
 
-function get_lastlog($git_dir,$num=3) {
+function get_lastlog($git_dir,$num=1) {
     if (IS_WIN) {
         Git::windows_mode();
     }
     $repo = Git::open($git_dir);
-    $ret = $repo->run('log --stat -p -'.($num>0?$num:3) );
+    $ret = $repo->run('log --stat -p -'.($num>0?$num:1) );
     return $ret;
     /*
     if (!file_exists($git_dir.'.git')) {
@@ -360,7 +360,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         @unlink($mail_lock);
     }
     @unlink($file_lock);
-    return $no_commit;
+    return !$no_commit;
 }
 
 function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',$remote_branch='') {
@@ -470,7 +470,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         @unlink($mail_lock);
     }
     @unlink($file_lock);
-    return $no_commit;
+    return !$no_commit;
 }
 
 function send_mail($path,$mail_lock,$subject) {

@@ -9,9 +9,11 @@ const SESSION_MP = 'mpwiki';
 const SESSION_QY = 'qywiki';
 const SESSION_NOTICE = 'notice';
 
-defined('WIKI_DIR_MP') or define('WIKI_DIR_MP',isset($_ENV["WIKI_DIR_MP"])?$_ENV["WIKI_DIR_MP"]:'./wiki/mp/');
-defined('WIKI_DIR_QY') or define('WIKI_DIR_QY',isset($_ENV["WIKI_DIR_QY"])?$_ENV["WIKI_DIR_QY"]:'./wiki/qy/');
-defined('NOTICE_DIR') or define('NOTICE_DIR',isset($_ENV["NOTICE_DIR"])?$_ENV["NOTICE_DIR"]:'./wiki/notice/');
+
+defined('WIKI_DIR') or define('WIKI_DIR',isset($_ENV["WIKI_DIR"])?($_ENV["WIKI_DIR"].(substr($_ENV["WIKI_DIR"],-1,1)=='/'?'':'/')):'./wiki/');
+defined('WIKI_DIR_MP') or define('WIKI_DIR_MP',(isset($_ENV["WIKI_DIR_MP"])?$_ENV["WIKI_DIR_MP"]:WIKI_DIR).'mp/');
+defined('WIKI_DIR_QY') or define('WIKI_DIR_QY',(isset($_ENV["WIKI_DIR_QY"])?$_ENV["WIKI_DIR_QY"]:WIKI_DIR).'qy/');
+defined('NOTICE_DIR') or define('NOTICE_DIR',(isset($_ENV["NOTICE_DIR"])?$_ENV["NOTICE_DIR"]:WIKI_DIR).'notice/');
 
 defined('REMOTE_GIT') or define('REMOTE_GIT',isset($_ENV["REMOTE_GIT"])?$_ENV["REMOTE_GIT"]:''); //总库，如果使用这个就不使用分开的
 defined('REMOTE_GIT_MP') or define('REMOTE_GIT_MP',isset($_ENV["REMOTE_GIT_MP"])?$_ENV["REMOTE_GIT_MP"]:'');

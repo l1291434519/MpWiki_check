@@ -13,12 +13,13 @@
 
 ## 环境变量：
 部署时需设定的环境变量列表：
+* WIKI_DIR            监测缓存的本地存放主目录(使用此参数可免设置下面3个参数)
 * WIKI_DIR_MP         微信公众平台wiki的本地存放目录
 * WIKI_DIR_QY         微信企业平台wiki的本地存放目录
 * NOTICE_DIR          微信平台公告的本地存放目录
 
 * REMOTE_GIT          微信平台更新监测总库的远程git地址
-                    使用此参数则将几个监测作为不同分支保管，就可以不建立好几个git库了
+                      使用此参数则将几个监测作为不同分支保管，就可以不建立好几个git库了
 * REMOTE_GIT_MP       微信公众平台wiki的远程git地址
 * REMOTE_GIT_QY       微信企业平台wiki的远程git地址
 * REMOTE_GIT_NOTICE   微信平台公告的远程git地址
