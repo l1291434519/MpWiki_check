@@ -276,7 +276,7 @@ function get_lastlog($git_dir,$num=3) {
     */
 }
 
-function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='') {
+function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$remote_branch='') {
     session_name($sname);
     session_start();
     set_time_limit(300);
@@ -319,9 +319,11 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='') {
     }
     if (!file_exists($path.'.git')) {
         echo date("Y-m-d H:i:s") . " 未创建git库，将创建<br><br>";
-        if ($remote_git) //是否设置了远程仓库
-            $ret=Git::clone_remote($path,$remote_git); //从远程仓库clone
-        else
+        if ($remote_git){            //是否设置了远程仓库
+            $ret=Git::clone_remote($path,$remote_git,true,$remote_branch); //从远程仓库clone(可指定分支)
+            if (!Git::is_repo($ret))
+                $ret=Git::create($path); //如果clone失败，则本地创建
+        } else
             $ret=Git::create($path); //直接本地创建
         echo date("Y-m-d H:i:s") . " 创建结果：".(Git::is_repo($ret)?'成功':'失败')."<br>";
     }
@@ -357,9 +359,10 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='') {
         $ret = $repo->commit('check time: '.date("Y-m-d H:i:s"));
         echo time() . " 已进行git提交，共计用时：".(time()-$stime)."秒<br><br>";
         if ($remote_git) {
+            $branch = $repo->active_branch();
             echo "检测到远程仓库参数，提交到远程仓库...<br>";
             $repo->run("remote add $stime ".$remote_git); //添加远程仓库
-            $repo->run("push -f $stime master");  //强制覆盖远程仓库
+            $repo->run("push -f $stime ".$branch.(empty($remote_branch)?'master':":$remote_branch"));  //强制覆盖远程仓库(可指定分支)
             $repo->run("remote remove $stime"); //删除远程仓库
         }
         echo "提交git日志内容如下：<hr>".nl2br(htmlspecialchars($ret));
@@ -371,7 +374,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='') {
     return $no_commit;
 }
 
-function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='') {
+function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',$remote_branch='') {
     session_name($sname);
     session_start();
     set_time_limit(300);
@@ -414,9 +417,11 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='')
     }
     if (!file_exists($path.'.git')) {
         echo date("Y-m-d H:i:s") . " 未创建git库，将创建<br><br>";
-        if ($remote_git) //是否设置了远程仓库
-            $ret=Git::clone_remote($path,$remote_git); //从远程仓库clone
-        else
+        if ($remote_git){            //是否设置了远程仓库
+            $ret=Git::clone_remote($path,$remote_git,true,$remote_branch); //从远程仓库clone(可指定分支)
+            if (!Git::is_repo($ret))
+                $ret=Git::create($path); //如果clone失败，则本地创建
+        } else
             $ret=Git::create($path); //直接本地创建
         echo date("Y-m-d H:i:s") . " 创建结果：".(Git::is_repo($ret)?'成功':'失败')."<br>";
     }
@@ -466,7 +471,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='')
         if ($remote_git) {
             echo "检测到远程仓库参数，提交到远程仓库...<br>";
             $repo->run("remote add $stime ".$remote_git); //添加远程仓库
-            $repo->run("push -f $stime master");  //强制覆盖远程仓库
+            $repo->run("push -f $stime ".$branch.(empty($remote_branch)?'master':":$remote_branch"));  //强制覆盖远程仓库(可指定分支)
             $repo->run("remote remove $stime"); //删除远程仓库
         }
         echo "提交git日志内容如下：<hr>".nl2br(htmlspecialchars($ret));

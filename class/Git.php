@@ -48,7 +48,7 @@ class Git {
 	public static function get_bin() {
 		return self::$bin;
 	}
-	
+
 	/**
 	 * Sets up library for use in a default Windows environment
 	 */
@@ -82,13 +82,13 @@ class Git {
 	public static function open($repo_path) {
 		return new GitRepo($repo_path);
 	}
-	
+
 	/**
 	 * Clones a remote repo into a directory and then returns a GitRepo object
 	 * for the newly created local repo
-	 * 
+	 *
 	 * Accepts a creation path and a remote to clone from
-	 * 
+	 *
 	 * @access  public
 	 * @param   string  repository path
 	 * @param   string  remote source
@@ -139,14 +139,14 @@ class GitRepo {
 	 * @param   string  directory to source
 	 * @return  GitRepo
 	 */
-	public static function &create_new($repo_path, $source = null, $remote_source = false) {
+	public static function &create_new($repo_path, $source = null, $remote_source = false, $remote_branch='') {
 		if (is_dir($repo_path) && file_exists($repo_path."/.git") && is_dir($repo_path."/.git")) {
 			throw new Exception('"'.$repo_path.'" is already a git repository');
 		} else {
 			$repo = new self($repo_path, true, false);
 			if (is_string($source)) {
 				if ($remote_source) {
-					$repo->clone_remote($source);
+					$repo->clone_remote($source, $remote_branch);
 				} else {
 					$repo->clone_from($source);
 				}
@@ -318,7 +318,7 @@ class GitRepo {
 	 * Runs a 'git status' call
 	 *
 	 * Accept a convert to HTML bool
-	 * 
+	 *
 	 * @access public
 	 * @param bool  return string with <br />
 	 * @return string
@@ -346,7 +346,7 @@ class GitRepo {
 		}
 		return $this->run("add $files -v");
 	}
-	
+
 	/**
 	 * Runs a `git rm` call
 	 *
@@ -416,10 +416,11 @@ class GitRepo {
 	 *
 	 * @access  public
 	 * @param   string  source url
+	 * @param   string  branch remote branch
 	 * @return  string
 	 */
-	public function clone_remote($source) {
-		return $this->run("clone $source ".$this->repo_path);
+	public function clone_remote($source,$branch='') {
+		return $this->run("clone $source ".$this->repo_path.(empty($branch)?'':" -b $branch"));
 	}
 
 	/**
@@ -552,10 +553,11 @@ class GitRepo {
 	 * Runs a git fetch on the current branch
 	 *
 	 * @access  public
+	 * @param string $remote
 	 * @return  string
 	 */
-	public function fetch() {
-		return $this->run("fetch");
+	public function fetch($remote='') {
+		return $this->run("fetch ".($remote?$remote:'--all'));
 	}
 
 	/**

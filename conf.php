@@ -13,6 +13,7 @@ defined('WIKI_DIR_MP') or define('WIKI_DIR_MP',isset($_ENV["WIKI_DIR_MP"])?$_ENV
 defined('WIKI_DIR_QY') or define('WIKI_DIR_QY',isset($_ENV["WIKI_DIR_QY"])?$_ENV["WIKI_DIR_QY"]:'./wiki/qy/');
 defined('NOTICE_DIR') or define('NOTICE_DIR',isset($_ENV["NOTICE_DIR"])?$_ENV["NOTICE_DIR"]:'./wiki/notice/');
 
+defined('REMOTE_GIT') or define('REMOTE_GIT',isset($_ENV["REMOTE_GIT"])?$_ENV["REMOTE_GIT"]:''); //总库，如果使用这个就不使用分开的
 defined('REMOTE_GIT_MP') or define('REMOTE_GIT_MP',isset($_ENV["REMOTE_GIT_MP"])?$_ENV["REMOTE_GIT_MP"]:'');
 defined('REMOTE_GIT_QY') or define('REMOTE_GIT_QY',isset($_ENV["REMOTE_GIT_QY"])?$_ENV["REMOTE_GIT_QY"]:'');
 defined('REMOTE_GIT_NOTICE') or define('REMOTE_GIT_NOTICE',isset($_ENV["REMOTE_GIT_NOTICE"])?$_ENV["REMOTE_GIT_NOTICE"]:'');
