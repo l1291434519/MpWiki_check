@@ -539,7 +539,7 @@ function send_mail($path,$mail_lock,$subject) {
             echo "邮件错误信息: " . $mail->ErrorInfo. "<br />";
         } else {
             @unlink($tmp_file);
-            echo "邮件已发送到邮箱 $smtpemailto <br />";
+            echo "邮件已发送到邮箱 <br />";
             file_put_contents($mail_lock,'ok');
         }
     } else
