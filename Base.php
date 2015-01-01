@@ -501,7 +501,7 @@ function send_mail($path,$mail_lock,$subject) {
         $mailtype = "HTML";//邮件格式（HTML/TXT）,TXT为文本邮件
         $mailsubject = "监测通知：微信公众平台WIKI更新";//邮件主题
         $mailbody = "<h1> 更新内容为： </h1>"."git日志内容如下：<br><hr>".
-                    nl2br(htmlspecialchars(substr($ret_text,stripos($ret_text,"\ndiff --git")))).
+                    nl2br(htmlspecialchars(substr($ret_text,0,stripos($ret_text,"\ndiff --git")))).
                     "<br><hr>更多内容，请参看附件".$tmp_file;//邮件内容
         ##########################################
 
