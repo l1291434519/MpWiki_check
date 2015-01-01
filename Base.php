@@ -351,7 +351,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
             $branch = $repo->active_branch();
             echo "检测到远程仓库参数，提交到远程仓库...<br>";
             $repo->run("remote add $stime ".$remote_git); //添加远程仓库
-            $repo->run("push -f $stime ".$branch.(empty($remote_branch)?'master':":$remote_branch"));  //强制覆盖远程仓库(可指定分支)
+            $repo->run("push -f $stime $branch:".(empty($remote_branch)?'master':"$remote_branch"));  //强制覆盖远程仓库(可指定分支)
             $repo->run("remote remove $stime"); //删除远程仓库
         }
         echo "提交git日志内容如下：<hr>".nl2br(htmlspecialchars($ret));
@@ -458,9 +458,10 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         $ret = $repo->commit('check time: '.date("Y-m-d H:i:s"));
         echo time() . " 已进行git提交，共计用时：".(time()-$stime)."秒<br><br>";
         if ($remote_git) {
+            $branch = $repo->active_branch();
             echo "检测到远程仓库参数，提交到远程仓库...<br>";
             $repo->run("remote add $stime ".$remote_git); //添加远程仓库
-            $repo->run("push -f $stime ".$branch.(empty($remote_branch)?'master':":$remote_branch"));  //强制覆盖远程仓库(可指定分支)
+            $repo->run("push -f $stime $branch:".(empty($remote_branch)?'master':"$remote_branch"));  //强制覆盖远程仓库(可指定分支)
             $repo->run("remote remove $stime"); //删除远程仓库
         }
         echo "提交git日志内容如下：<hr>".nl2br(htmlspecialchars($ret));
