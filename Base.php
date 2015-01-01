@@ -311,7 +311,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         if ($remote_git){            //是否设置了远程仓库
             echo "尝试从远程仓库克隆数据...<br>";
             $ret=Git::clone_remote($path,$remote_git,$remote_branch); //从远程仓库clone(可指定分支)
-            if (!Git::is_repo($ret)){
+            if (!Git::is_repo($ret) || !file_exists($path.'.git') || !$ret){
                 echo "从远程仓库克隆失败，本地创建...<br>";
                 $ret=Git::create($path); //如果clone失败，则本地创建
             }
@@ -418,7 +418,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         if ($remote_git){            //是否设置了远程仓库
             echo "尝试从远程仓库克隆数据...<br>";
             $ret=Git::clone_remote($path,$remote_git,$remote_branch); //从远程仓库clone(可指定分支)
-            if (!Git::is_repo($ret)){
+            if (!Git::is_repo($ret) || !file_exists($path.'.git') || !$ret){
                 echo "从远程仓库克隆失败，本地创建...<br>";
                 $ret=Git::create($path); //如果clone失败，则本地创建
             }

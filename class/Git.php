@@ -297,7 +297,11 @@ class GitRepo {
 		}
 
 		$status = trim(proc_close($resource));
-		if ($status) throw new Exception($stderr);
+		if ($status) {
+		    //throw new Exception($stderr); //屏蔽掉异常报错，太烦人
+		    //echo "报异常了，将返回的数据".$stdout;
+		    return false;
+		}
 
 		return $stdout;
 	}
