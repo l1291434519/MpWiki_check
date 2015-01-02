@@ -259,7 +259,6 @@ function get_content($url,$search = '/class=\"bodyContent\">(.*)<div class=\"pri
             $find = false;
         }
     } while ($find);
-    var_dump($str);
     if (count($str_arr) > 0) {
         $str = implode('',$str_arr);
     }
@@ -507,7 +506,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
     return !$no_commit;
 }
 
-function send_mail($path,$mail_lock,$subject) {
+function send_mail($path,$mail_lock,$subject,$to=array()) {
     if (!file_exists($mail_lock)) { //从getwiki.php中得到的更新标志
 
         $tmp_file = './update_'.time().'.txt';
@@ -531,23 +530,35 @@ function send_mail($path,$mail_lock,$subject) {
             echo "由于邮箱SMTP账号信息等未配置，邮件未能发送<br />";
             return false; //未设置参数则返回
         }
+        $to_arr = preg_split('/[,;\/\\\|]/',$smtpemailto);
+        if (is_array($to)) {
+            $to_arr = array_merge($to_arr,$to);
+        } elseif (is_string($to)) {
+            $to_arr[] = $to;
+        }
+        $to_count = count($to_arr);
 
         write($tmp_file,$ret_text);
 
         $mail = new PHPMailer();
         $mail->IsSMTP();                // send via SMTP
         //$mail->SMTPDebug  = 1;
-        $mail->Host = $smtpserver; // SMTP servers
-        $mail->Port = $smtpserverport;
         $mail->SMTPAuth = true;         // turn on SMTP authentication
         $mail->SMTPSecure = "ssl";
-        $mail->Username = $smtpuser;   // SMTP username  注意：普通邮件认证不需要加 @域名
-        $mail->Password = $smtppass;        // SMTP password
-        $mail->From = $smtpusermail;      // 发件人邮箱
-        $mail->FromName =  "Auto Robot";  // 发件人
         $mail->CharSet = "utf-8";            // 这里指定字符集！
         $mail->Encoding = "base64";
-        $mail->AddAddress($smtpemailto);  // 收件人邮箱和姓名
+
+        $mail->Host = $smtpserver; // SMTP servers
+        $mail->Port = $smtpserverport;
+        $mail->Username = $smtpuser;   // SMTP username  注意：普通邮件认证不需要加 @域名
+        $mail->Password = $smtppass;        // SMTP password
+
+        $mail->setFrom($smtpusermail,"Auto Robot"); //设置发件人信息
+
+        foreach ($to_arr as $to_str) {
+            $mail->AddAddress($to_str);  // 收件人邮箱和姓名
+        }
+
         $mail->AddReplyTo($smtpusermail); //回复地址和姓名
         $mail->WordWrap = 50; // set word wrap
         $mail->IsHTML(true);  // send as HTML
@@ -557,7 +568,7 @@ function send_mail($path,$mail_lock,$subject) {
         $mail->addAttachment($tmp_file);
         if(!$mail->Send()){
             @unlink($tmp_file);
-            echo $smtpemailto."邮件发送有误,";
+            echo "邮件发送失败,";
             echo "邮件错误信息: " . $mail->ErrorInfo. "<br />";
         } else {
             @unlink($tmp_file);
