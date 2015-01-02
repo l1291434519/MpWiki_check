@@ -240,12 +240,34 @@ function get_content($url,$search = '/class=\"bodyContent\">(.*)<div class=\"pri
     $data = http_get($url);
     preg_match($search,$data,$arr);                        //获取内容
     $str = isset($arr[1])?$arr[1]:'';
+    $str_arr = array();
+    $start = 0;
+    $end = 0;
+    $last = 0;
+    do {
+        $start = strpos($str,'<!--',$last);
+        if ($start !== false) {
+            $str_arr[] = substr($str, $last, $start - $last);
+            $end = strpos($str,'-->',$start);
+            if ($end !== false) {
+                $end += 3;
+                $last = $end;
+                $find = true;
+            }
+        } else {
+            $str_arr[] = substr($str, $last, strlen($str) - $last);
+            $find = false;
+        }
+    } while ($find);
+    var_dump($str);
+    if (count($str_arr) > 0) {
+        $str = implode('',$str_arr);
+    }
+    unset($str_arr);
     unset($data);
     unset($arr);
     if ($str)
         return $str;
-//    logg("未能获取到内容，url为: ".$url);
-//    logg("\$data = \n".var_export($data,true));
     return false;
 }
 
