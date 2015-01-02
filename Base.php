@@ -531,11 +531,10 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
             return false; //未设置参数则返回
         }
         $to_arr = preg_split('/[,;\/\\\|]/',$smtpemailto);
-        if (is_array($to)) {
-            $to_arr = array_merge($to_arr,$to);
-        } elseif (is_string($to)) {
-            $to_arr[] = $to;
+        if (is_string($to)) {
+            $to = preg_split('/[,;\/\\\|]/',$to);
         }
+        $to_arr = array_merge($to_arr,$to);
         $to_count = count($to_arr);
 
         write($tmp_file,$ret_text);

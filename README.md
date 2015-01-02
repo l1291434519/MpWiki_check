@@ -30,7 +30,7 @@
 * SMTP_SERVER         SMTP服务器
 * SMTP_SERVER_PORT    SMTP服务器端口
 * SMTP_USER_MAIL      SMTP服务器的用户邮箱
-* SMTP_MAIL_TO        邮件收件人
+* SMTP_MAIL_TO        邮件收件人,多个手机人用|或,或;分隔
 * SMTP_USER           SMTP服务器的用户帐号
 * SMTP_PASS           SMTP服务器的用户密码
 
