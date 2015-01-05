@@ -325,8 +325,6 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
 
     echo date("Y-m-d H:i:s") . " 准备中...<br>";
     mk_dir($path);
-    mk_dir($path . 'mp/');
-    mk_dir($path . 'qy/');
     if (IS_WIN) {
         Git::windows_mode();
     }
@@ -343,6 +341,8 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
             $ret=Git::create($path); //直接本地创建
         echo date("Y-m-d H:i:s") . " 创建结果：".(Git::is_repo($ret)?'成功':'失败')."<br>";
     }
+    mk_dir($path . 'mp/');
+    mk_dir($path . 'qy/');
     $files  =ls_file($path);
     foreach ($files as $file) {
         if (!is_dir($path . $file))
