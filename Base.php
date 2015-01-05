@@ -275,6 +275,7 @@ function get_lastlog($git_dir,$num=1) {
         Git::windows_mode();
     }
     $repo = Git::open($git_dir);
+    $repo->run('config --global core.quotepath false'); //配置git显示中文不转码
     $ret = $repo->run('log --stat -p -'.($num>0?$num:1) );
     return $ret;
     /*
@@ -408,6 +409,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         $ret0 = $repo->add();
         $repo->run('config --global user.email "'.GIT_EMAIL.'"');//git config --global user.email "you@example.com"
         $repo->run('config --global user.name "'.GIT_NAME.'"');//git config --global user.name "Your Name"
+        $repo->run('config --global core.quotepath false'); //配置git显示中文不转码
         $ret = $repo->commit('check time: '.date("Y-m-d H:i:s"));
         echo time() . " 已进行git提交，共计用时：".(time()-$stime)."秒<br><br>";
         if ($remote_git) {
@@ -521,6 +523,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         $ret0 = $repo->add();
         $repo->run('config --global user.email "'.GIT_EMAIL.'"');//git config --global user.email "you@example.com"
         $repo->run('config --global user.name "'.GIT_NAME.'"');//git config --global user.name "Your Name"
+        $repo->run('config --global core.quotepath false'); //配置git显示中文不转码
         $ret = $repo->commit('check time: '.date("Y-m-d H:i:s"));
         echo time() . " 已进行git提交，共计用时：".(time()-$stime)."秒<br><br>";
         if ($remote_git) {
