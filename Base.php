@@ -6,7 +6,7 @@ function logg($text,$file='./log.txt'){
 };
 
 function write($file,$text){
-    file_put_contents($file,$text);
+    file_put_contents(IS_WIN?mb_convert_encoding($file,'GBK','UTF-8'):$file,$text);
 };
 
 function mk_dir($dir)
@@ -178,7 +178,7 @@ function get_mp_notice($url = 'https://mp.weixin.qq.com/cgi-bin/announce?action=
             if (count($li)>2)
                 $list[]=array(
                         'date' => $li[3],
-                        'title' => trim(htmlspecialchars_decode(substr($li[2],0,stripos($li[2],'     ')+1))),
+                        'title' => trim(str_replace('&nbsp;',' ',htmlspecialchars_decode(substr($li[2],0,stripos($li[2],'     ')+1)))),
                         'url' => ((substr($li[1],0,1)=='/')?$url_base:((substr($li[1],0,1)=='.')?$url_base.$tmp_arr['path']:'')).$li[1]
                 );
         }
@@ -219,8 +219,8 @@ function get_qy_notice($url = 'https://qy.weixin.qq.com/cgi-bin/homepagenotify?a
         foreach ($arr2 as $li) {
             if (count($li)>2)
                 $list[]=array(
-                        'date' => $li[3],
-                        'title' => $li[2],
+                        'date' => trim($li[3]),
+                        'title' => trim(str_replace('&nbsp;',' ',htmlspecialchars_decode($li[2]))),
                         'url' => ((substr($li[1],0,1)=='/')?$url_base:((substr($li[1],0,1)=='.')?$url_base.$tmp_arr['path']:'')).$li[1]
                 );
         }
@@ -324,6 +324,8 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
 
     echo date("Y-m-d H:i:s") . " 准备中...<br>";
     mk_dir($path);
+    mk_dir($path . 'mp/');
+    mk_dir($path . 'qy/');
     if (IS_WIN) {
         Git::windows_mode();
     }
@@ -345,7 +347,8 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         if (!is_dir($path . $file))
             unlink($path . $file);
     }
-    $count=0;
+    $count = 0;
+    $ccount = 0;
     $ret_mp = get_mp_notice();
     if ($ret_mp) {
         write($path.'mp_notice.txt',json($ret_mp));
@@ -356,8 +359,38 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         write($path.'qy_notice.txt',json($ret_qy));
         $count++;
     }
+    echo date("Y-m-d H:i:s") . " 读取公告列表完毕，开始读取公告内容页...<br>";
 
-    echo date("Y-m-d H:i:s") . " 读取页面数量：".$count."<br>";
+    if ($ret_mp) { //写出mp平台公告
+        foreach ($ret_mp as $arr) {
+            $file = (strpos($arr['date'],'-') ? $arr['date'] : date('Y-m-d',$arr['date']));
+            $file .=  '#' . $arr['title'] . '.html';
+            $file = $path . 'mp/' . preg_replace('/[\/\|*?\\\:<>]/i','_',$file);
+            if (!file_exists($file)) { //只抓取未记录的公告
+                $ret = http_get($arr['url']);
+                if ($ret) {
+                    write($file, $ret);
+                    $ccount++;
+                }
+            }
+        }
+    }
+    if ($ret_qy) { //写出qy平台公告
+        foreach ($ret_qy as $arr) {
+            $file = (strpos($arr['date'],'-') ? $arr['date'] : date('Y-m-d',$arr['date']));
+            $file .=  '#' . $arr['title'] . '.html';
+            $file = $path . 'qy/' . preg_replace('/[\/\|*?\\\:<>]/i','_',$file);
+            if (!file_exists($file)) { //只抓取未记录的公告
+                $ret = http_get($arr['url']);
+                if ($ret) {
+                    write($file, $ret);
+                    $ccount++;
+                }
+            }
+        }
+    }
+
+    echo date("Y-m-d H:i:s") . " 读取页面" . $count . "个，抓取新公告" . $ccount . "篇<br>";
     $repo = Git::open($path);
     $ret=$repo->status(true);
     $no_commit=preg_match('/nothing to commit, working directory clean/',$ret);
@@ -469,7 +502,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
                 if (substr($a['url'],0,1)=='.' || substr($a['url'],0,1)=='/') { //地址以.或/开头，则为wiki文档
                     $content=get_content(((substr($a['url'],0,1)=='/')?$url_base:((substr($a['url'],0,1)=='.')?$url_base.$tmp_arr['path']:'')).$a['url']);
                     if ($content) {
-                        write($path.(IS_WIN?mb_convert_encoding($a['title'],'GBK','UTF-8'):$a['title']).'.txt',$content);
+                        write($path . $a['title'] . '.txt',$content);
                         $count++;
                     }
                 }
