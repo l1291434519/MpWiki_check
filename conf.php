@@ -20,6 +20,8 @@ defined('REMOTE_GIT_MP') or define('REMOTE_GIT_MP',isset($_ENV["REMOTE_GIT_MP"])
 defined('REMOTE_GIT_QY') or define('REMOTE_GIT_QY',isset($_ENV["REMOTE_GIT_QY"])?$_ENV["REMOTE_GIT_QY"]:'');
 defined('REMOTE_GIT_NOTICE') or define('REMOTE_GIT_NOTICE',isset($_ENV["REMOTE_GIT_NOTICE"])?$_ENV["REMOTE_GIT_NOTICE"]:'');
 
+defined('REMOTE_URL') or define('REMOTE_URL',isset($_ENV["REMOTE_URL"])?$_ENV["REMOTE_URL"]:'');
+
 defined('MAIL_LOCK_MP') or define('MAIL_LOCK_MP','./send_mail_mp.lock');
 defined('MAIL_LOCK_QY') or define('MAIL_LOCK_QY','./send_mail_qy.lock');
 defined('MAIL_LOCK_NOTICE') or define('MAIL_LOCK_NOTICE','./send_mail_notice.lock');

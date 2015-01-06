@@ -566,6 +566,12 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
             echo "由于邮箱SMTP账号信息等未配置，邮件未能发送<br />";
             return false; //未设置参数则返回
         }
+        if (!empty(MAIL_REMOTE_URL)) {
+        	$mailbody .= "<br>或者点击查看远程仓库页面：<a href=\"".REMOTE_URL."\">".REMOTE_URL."</a>";
+        }
+        if (empty($to)) {
+            $to = isset($_ENV["SMTP_MAIL_TO2"])?$_ENV["SMTP_MAIL_TO2"]:"";//附加收件人
+        }
         $to_arr = preg_split('/[,;\/\\\|]/',$smtpemailto);
         if (is_string($to)) {
             $to = preg_split('/[,;\/\\\|]/',$to);

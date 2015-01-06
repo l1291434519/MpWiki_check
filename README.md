@@ -23,6 +23,7 @@
 * REMOTE_GIT_MP       微信公众平台wiki的远程git地址
 * REMOTE_GIT_QY       微信企业平台wiki的远程git地址
 * REMOTE_GIT_NOTICE   微信平台公告的远程git地址
+* REMOTE_URL          远程git仓库url，附加在邮件里
 
 * GIT_EMAIL           标注GIT库的作者邮箱
 * GIT_NAME            标注GIT库的作者
@@ -31,6 +32,7 @@
 * SMTP_SERVER_PORT    SMTP服务器端口
 * SMTP_USER_MAIL      SMTP服务器的用户邮箱
 * SMTP_MAIL_TO        邮件收件人,多个手机人用|或,或;分隔
+* SMTP_MAIL_TO2       附加邮件收件人,多个手机人用|或,或;分隔
 * SMTP_USER           SMTP服务器的用户帐号
 * SMTP_PASS           SMTP服务器的用户密码
 
