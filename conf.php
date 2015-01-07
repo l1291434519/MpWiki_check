@@ -35,5 +35,5 @@ defined('GIT_NAME') or define('GIT_NAME',isset($_ENV["GIT_NAME"])?$_ENV["GIT_NAM
 defined('IS_WIN') or define('IS_WIN',(substr(PHP_OS,0,3)=='WIN'));
 
 error_reporting(0);
-
+date_default_timezone_set('Asia/Shanghai');//设置时区，避免在云部署时时间错误
 ?>
