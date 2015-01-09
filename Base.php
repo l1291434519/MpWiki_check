@@ -367,13 +367,13 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
             $file = (strpos($arr['date'],'-') ? $arr['date'] : date('Y-m-d',$arr['date']));
             $file .=  '#' . $arr['title'] . '.html';
             $file = $path . 'mp/' . preg_replace('/[\/\|*?\\\:<>]/i','_',$file);
-            if (!file_exists($file)) { //只抓取未记录的公告
+            //if (!file_exists($file)) { //只抓取未记录的公告
                 $ret = http_get($arr['url']);
                 if ($ret) {
                     write($file, $ret);
                     $ccount++;
                 }
-            }
+            //}
         }
     }
     if ($ret_qy) { //写出qy平台公告
@@ -381,13 +381,13 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
             $file = (strpos($arr['date'],'-') ? $arr['date'] : date('Y-m-d',$arr['date']));
             $file .=  '#' . $arr['title'] . '.html';
             $file = $path . 'qy/' . preg_replace('/[\/\|*?\\\:<>]/i','_',$file);
-            if (!file_exists($file)) { //只抓取未记录的公告
+            //if (!file_exists($file)) { //只抓取未记录的公告
                 $ret = http_get($arr['url']);
                 if ($ret) {
                     write($file, $ret);
                     $ccount++;
                 }
-            }
+            //}
         }
     }
 
