@@ -8,6 +8,7 @@ const BASE_URL_QY = 'http://qydev.weixin.qq.com/wiki/';
 const SESSION_MP = 'mpwiki';
 const SESSION_QY = 'qywiki';
 const SESSION_NOTICE = 'notice';
+const LOCK_TIME = '300';    //5分钟内只工作一次
 
 
 defined('WIKI_DIR') or define('WIKI_DIR',isset($_ENV["WIKI_DIR"])?($_ENV["WIKI_DIR"].(substr($_ENV["WIKI_DIR"],-1,1)=='/'?'':'/')):'./wiki/');

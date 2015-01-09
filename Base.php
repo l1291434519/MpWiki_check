@@ -309,7 +309,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         }
         $work = true;
         unlink($file_lock);
-    } elseif (empty($_SESSION['work_time']) || ($stime - $_SESSION['work_time']) > 60){ //保证60秒内只访问一次
+    } elseif (empty($_SESSION['work_time']) || ($stime - $_SESSION['work_time']) > LOCK_TIME){ //保证 LOCK_TIME 秒内只访问一次
         $work = true;
     }
     if ($work && !file_exists($file_lock)) {
@@ -317,7 +317,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         $_SESSION['work_time'] = $stime;
         file_put_contents($file_lock,$stime);
     } else {
-        echo "距离上次获取请求时间小于1分钟，请稍后再次访问。";
+        echo "距离上次获取请求时间间隔多短，请稍后再次访问。";
         return false;
         //exit;
     }
@@ -458,7 +458,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         }
         $work = true;
         unlink($file_lock);
-    } elseif (empty($_SESSION['work_time']) || ($stime - $_SESSION['work_time']) > 60){ //保证60秒内只访问一次
+    } elseif (empty($_SESSION['work_time']) || ($stime - $_SESSION['work_time']) > LOCK_TIME){ //保证 LOCK_TIME 秒内只访问一次
         $work = true;
     }
     if ($work && !file_exists($file_lock)) {
@@ -466,7 +466,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         $_SESSION['work_time'] = $stime;
         file_put_contents($file_lock,$stime);
     } else {
-        echo "距离上次获取请求时间小于1分钟，请稍后再次访问。";
+        echo "距离上次获取请求时间间隔多短，请稍后再次访问。";
         return false;
         //exit;
     }
