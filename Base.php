@@ -362,32 +362,40 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
     }
     echo date("Y-m-d H:i:s") . " 读取公告列表完毕，开始读取公告内容页...<br>";
 
+    $cover_count = 0;
     if ($ret_mp) { //写出mp平台公告
         foreach ($ret_mp as $arr) {
             $file = (strpos($arr['date'],'-') ? $arr['date'] : date('Y-m-d',$arr['date']));
             $file .=  '#' . $arr['title'] . '.html';
             $file = $path . 'mp/' . preg_replace('/[\/\|*?\\\:<>]/i','_',$file);
-            //if (!file_exists($file)) { //只抓取未记录的公告
+            $file_exist = file_exists($file);
+            if ($file_exist)
+                $cover_count++; //
+            if (!$file_exist || $cover_count <= 3) { //只抓取未记录的公告 或已有记录的前3个
                 $ret = http_get($arr['url']);
                 if ($ret) {
                     write($file, $ret);
                     $ccount++;
                 }
-            //}
+            }
         }
     }
+    $cover_count = 0;
     if ($ret_qy) { //写出qy平台公告
         foreach ($ret_qy as $arr) {
             $file = (strpos($arr['date'],'-') ? $arr['date'] : date('Y-m-d',$arr['date']));
             $file .=  '#' . $arr['title'] . '.html';
             $file = $path . 'qy/' . preg_replace('/[\/\|*?\\\:<>]/i','_',$file);
-            //if (!file_exists($file)) { //只抓取未记录的公告
+            $file_exist = file_exists($file);
+            if ($file_exist)
+                $cover_count++; //
+            if (!$file_exist || $cover_count <= 3) { //只抓取未记录的公告 或已有记录的前3个
                 $ret = http_get($arr['url']);
                 if ($ret) {
                     write($file, $ret);
                     $ccount++;
                 }
-            //}
+            }
         }
     }
 
@@ -569,6 +577,8 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
         if (!empty(MAIL_REMOTE_URL)) {
         	$mailbody .= "<br>或者点击查看远程仓库页面：<a href=\"".REMOTE_URL."\">".REMOTE_URL."</a>";
         }
+        $mailbody .= "<hr>收到此邮件说明曾经向我发消息订阅此通知，如不是您本人操作或不想再接收到此通知请回复邮件告诉我，我会进行处理。谢谢";
+
         if (empty($to)) {
             $to = isset($_ENV["SMTP_MAIL_TO2"])?$_ENV["SMTP_MAIL_TO2"]:"";//附加收件人
         }
@@ -578,6 +588,7 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
         }
         $to_arr = array_merge($to_arr,$to);
         $to_count = count($to_arr);
+        $to_arr = array_chunk($to_arr,20);
 
         write($tmp_file,$ret_text);
 
@@ -595,11 +606,6 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
         $mail->Password = $smtppass;        // SMTP password
 
         $mail->setFrom($smtpusermail,"Auto Robot"); //设置发件人信息
-
-        foreach ($to_arr as $to_str) {
-            $mail->AddAddress($to_str);  // 收件人邮箱和姓名
-        }
-
         $mail->AddReplyTo($smtpusermail); //回复地址和姓名
         $mail->WordWrap = 50; // set word wrap
         $mail->IsHTML(true);  // send as HTML
@@ -607,7 +613,14 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
         $mail->Body = $mailbody;
         $mail->AltBody ="text/html";
         $mail->addAttachment($tmp_file);
-        if(!$mail->Send()){
+        $sendRet = true;
+        foreach ($to_arr as $to_arr_lite) {
+            foreach ($to_arr_lite as $to_str) {
+                $mail->AddAddress($to_str);  // 收件人邮箱和姓名
+            }
+            $sendRet = $mail->Send() & $sendRet;
+        }
+        if($sendRet){
             @unlink($tmp_file);
             echo "邮件发送失败,";
             echo "邮件错误信息: " . $mail->ErrorInfo. "<br />";
