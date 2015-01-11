@@ -399,7 +399,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         }
     }
 
-    echo date("Y-m-d H:i:s") . " 读取页面" . $count . "个，抓取新公告" . $ccount . "篇<br>";
+    echo date("Y-m-d H:i:s") . " 读取页面" . $count . "个，抓取公告" . $ccount . "篇<br>";
     $repo = Git::open($path);
     $ret=$repo->status(true);
     $no_commit=preg_match('/nothing to commit, working directory clean/',$ret);
@@ -429,7 +429,10 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         }
         echo "提交git日志内容如下：<hr>".nl2br(htmlspecialchars($ret));
         $ret2 = $repo->run('log --stat -p -1');
-        echo "<hr>其他日志：<br>".nl2br(htmlspecialchars($ret0)).nl2br(htmlspecialchars($ret2));
+        $ret2 = nl2br(htmlspecialchars(substr($ret2,0,stripos($ret2,"\ndiff --git"))));
+        echo "<hr>其他日志：<br>".nl2br(htmlspecialchars($ret0)).$ret2;
+        if (!stripos($ret2,'_notice.txt') && $ccount>0) //如果公告列表没有更新，则认为没有更新公告。避免公告内容页不紧要的排版更新。
+            $no_commit = false;
         @unlink($mail_lock);
     }
     @unlink($file_lock);
