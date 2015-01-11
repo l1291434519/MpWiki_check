@@ -654,7 +654,7 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
                 $mail->AddAddress($to_str);  // 收件人邮箱和姓名
             }
             $sendRet = $mail->Send() & $sendRet;
-            $mail->clearCCs();
+            $mail->clearAllRecipients();
         }
         if($sendRet){
             @unlink($tmp_file);
