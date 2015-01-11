@@ -411,6 +411,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
             echo "由于公告页面可能读取失败，等待下次检测。<br>";
             @unlink($file_lock);
             $repo->checkout(".");      //撤销所有修改
+            $_SESSION['work_time'] -= LOCK_TIME; //取消检查时间，让检测可在稍后再次发起
             return false;
         }
         echo "待更新内容：<hr>".$ret."<hr>";
