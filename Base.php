@@ -539,7 +539,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
     echo date("Y-m-d H:i:s") . " 读取列表完毕，开始读取内容页...<br>";
     $count=0;
     $content=get_content($base_url);
-    write($path . 'index.txt',$content);
+    write($path . 'index.html',$content);
     $count++;
     foreach ($list as $arr) {
         if (isset($arr['ul'])) {
@@ -547,7 +547,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
                 if (substr($a['url'],0,1)=='.' || substr($a['url'],0,1)=='/') { //地址以.或/开头，则为wiki文档
                     $content=get_content(((substr($a['url'],0,1)=='/')?$url_base:((substr($a['url'],0,1)=='.')?$url_base.$tmp_arr['path']:'')).$a['url']);
                     if ($content) {
-                        write($path . $a['title'] . '.txt',$content);
+                        write($path . $a['title'] . '.html',$content);
                         $count++;
                     }
                 }
