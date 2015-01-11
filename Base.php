@@ -321,7 +321,6 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         return false;
         //exit;
     }
-    session_write_close(); //解除session，防止使其他访问页面一直等待session
 
     echo date("Y-m-d H:i:s") . " 准备中...<br>";
     mk_dir($path);
@@ -360,6 +359,14 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         write($path.'qy_notice.txt',json($ret_qy));
         $count++;
     }
+    if ($count<2) {
+        echo "由于公告页面可能读取失败，等待下次检测。<br>";
+        $repo->checkout(".");      //撤销所有修改
+        @unlink($file_lock);
+        $_SESSION['work_time'] -= LOCK_TIME; //取消检查时间，让检测可在稍后再次发起
+        return false;
+    }
+    session_write_close(); //解除session，防止使其他访问页面一直等待session
     echo date("Y-m-d H:i:s") . " 读取公告列表完毕，开始读取公告内容页...<br>";
 
     $cover_count = 0;
@@ -407,13 +414,6 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
     if ($no_commit) {
         echo " 未检测到更新，共计用时：".(time()-$stime)."秒<br>";
     } else {
-        if ($count<2) {
-            echo "由于公告页面可能读取失败，等待下次检测。<br>";
-            @unlink($file_lock);
-            $repo->checkout(".");      //撤销所有修改
-            $_SESSION['work_time'] -= LOCK_TIME; //取消检查时间，让检测可在稍后再次发起
-            return false;
-        }
         echo "待更新内容：<hr>".$ret."<hr>";
         $ret0 = $repo->add();
         $repo->run('config --global user.email "'.GIT_EMAIL.'"');//git config --global user.email "you@example.com"
