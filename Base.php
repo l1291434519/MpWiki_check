@@ -9,6 +9,11 @@ function write($file,$text){
     file_put_contents(IS_WIN?mb_convert_encoding($file,'GBK','UTF-8'):$file,$text);
 };
 
+
+function is_exist($file){
+    return file_exists(IS_WIN?mb_convert_encoding($file,'GBK','UTF-8'):$file);
+};
+
 function mk_dir($dir)
 {
     if (is_dir($dir) || @mkdir($dir,0777)) return true;
@@ -308,7 +313,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
             //exit;
         }
         $work = true;
-        unlink($file_lock);
+        @unlink($file_lock);
     } elseif (empty($_SESSION['work_time']) || ($stime - $_SESSION['work_time']) > LOCK_TIME){ //保证 LOCK_TIME 秒内只访问一次
         $work = true;
     }
@@ -345,7 +350,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
     $files  =ls_file($path);
     foreach ($files as $file) {
         if (!is_dir($path . $file))
-            unlink($path . $file);
+            @unlink($path . $file);
     }
     $count = 0;
     $ccount = 0;
@@ -359,6 +364,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         write($path.'qy_notice.txt',json($ret_qy));
         $count++;
     }
+    $repo = Git::open($path);
     if ($count<2) {
         echo "由于公告页面可能读取失败，等待下次检测。<br>";
         $repo->checkout(".");      //撤销所有修改
@@ -372,17 +378,31 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
     $cover_count = 0;
     if ($ret_mp) { //写出mp平台公告
         foreach ($ret_mp as $arr) {
-            $file = (strpos($arr['date'],'-') ? $arr['date'] : date('Y-m-d',$arr['date']));
-            $file .=  '#' . $arr['title'] . '.html';
+            $date = (strpos($arr['date'],'-') ? $arr['date'] : date('Y-m-d',$arr['date']));
+            $file = $date . '#' . $arr['title'] . '.html';
             $file = $path . 'mp/' . preg_replace('/[\/\|*?\\\:<>]/i','_',$file);
-            $file_exist = file_exists($file);
-            if ($file_exist)
-                $cover_count++; //
+            $file_exist = is_exist($file);
+            if ($file_exist) {
+                $cover_count++;
+            }
             if (!$file_exist || $cover_count <= 3) { //只抓取未记录的公告 或已有记录的前3个
                 $ret = http_get($arr['url']);
-                if ($ret) {
-                    write($file, $ret);
-                    $ccount++;
+                $search = '/window\.wxCgi[^=]+=[^{]+{([^}]*)}/s';
+                preg_match($search,$ret,$strarr);
+                $ret = isset($strarr[1])?$strarr[1]:'';
+                $str_start = stripos($ret,'content:');
+                if ($str_start) {
+                    $str_start += 9;
+                    $str_end = stripos($ret,'author:');
+                    if ($str_end) {
+                        $str_end -= 9;
+                        $str = substr($ret,$str_start,stripos($ret,'",',$str_start) - $str_start);
+                        if (!empty($str)) {
+                            htmlDecode($str);
+                            write($file, '<h3 class="announcement_title" style="text-align: center;">'.$arr['title'] .' # '.$date .'</h3><div id="content">'.$str.'</div>');
+                            $ccount++;
+                        }
+                    }
                 }
             }
         }
@@ -393,9 +413,10 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
             $file = (strpos($arr['date'],'-') ? $arr['date'] : date('Y-m-d',$arr['date']));
             $file .=  '#' . $arr['title'] . '.html';
             $file = $path . 'qy/' . preg_replace('/[\/\|*?\\\:<>]/i','_',$file);
-            $file_exist = file_exists($file);
-            if ($file_exist)
-                $cover_count++; //
+            $file_exist = is_exist($file);
+            if ($file_exist) {
+                $cover_count++;
+            }
             if (!$file_exist || $cover_count <= 3) { //只抓取未记录的公告 或已有记录的前3个
                 $ret = http_get($arr['url']);
                 if ($ret) {
@@ -407,7 +428,6 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
     }
 
     echo date("Y-m-d H:i:s") . " 读取页面" . $count . "个，抓取公告" . $ccount . "篇<br>";
-    $repo = Git::open($path);
     $ret=$repo->status(true);
     $no_commit=preg_match('/nothing to commit, working directory clean/',$ret);
 
@@ -440,6 +460,17 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
     return !$no_commit;
 }
 
+function htmlDecode(&$str) {
+    $str = str_ireplace('&#39;',"'",$str);
+    $str = str_ireplace('&nbsp;;'," ",$str);
+    $str = str_ireplace('&lt;',"<",$str);
+    $str = str_ireplace('&gt;',">",$str);
+    $str = str_ireplace('&quot;','"',$str);
+    $str = str_ireplace('&amp;',"&",$str);
+    $str = preg_replace('/<br\s*(\/)?\s*>/',"\n",$str);
+}
+
+
 function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',$remote_branch='') {
     session_name($sname);
     session_start();
@@ -461,7 +492,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
             //exit;
         }
         $work = true;
-        unlink($file_lock);
+        @unlink($file_lock);
     } elseif (empty($_SESSION['work_time']) || ($stime - $_SESSION['work_time']) > LOCK_TIME){ //保证 LOCK_TIME 秒内只访问一次
         $work = true;
     }
@@ -498,7 +529,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
     $files  =ls_file($path);
     foreach ($files as $file) {
         if (!is_dir($path . $file))
-            unlink($path . $file);
+            @unlink($path . $file);
     }
     $tmp_arr = parse_url($base_url);
     $url_base = $tmp_arr['scheme'].'://'.$tmp_arr['host'];
@@ -578,7 +609,7 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
             echo "由于邮箱SMTP账号信息等未配置，邮件未能发送<br />";
             return false; //未设置参数则返回
         }
-        if (!empty(MAIL_REMOTE_URL)) {
+        if (REMOTE_URL !== '') {
         	$mailbody .= "<br>或者点击查看远程仓库页面：<a href=\"".REMOTE_URL."\">".REMOTE_URL."</a>";
         }
         $mailbody .= "<hr>收到此邮件说明曾经向我发消息订阅此通知，如不是您本人操作或不想再接收到此通知请回复邮件告诉我，我会进行处理。谢谢";
