@@ -362,8 +362,8 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
     if ($count<2) {
         echo "由于公告页面可能读取失败，等待下次检测。<br>";
         $repo->checkout(".");      //撤销所有修改
+        $_SESSION['work_time'] = $stime - LOCK_TIME; //取消检查时间，让检测可在稍后再次发起
         @unlink($file_lock);
-        $_SESSION['work_time'] -= LOCK_TIME; //取消检查时间，让检测可在稍后再次发起
         return false;
     }
     session_write_close(); //解除session，防止使其他访问页面一直等待session
@@ -433,7 +433,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         $ret2 = nl2br(htmlspecialchars(substr($ret2,0,stripos($ret2,"\ndiff --git"))));
         echo "<hr>其他日志：<br>".nl2br(htmlspecialchars($ret0)).$ret2;
         if (!stripos($ret2,'_notice.txt') && $ccount>0) //如果公告列表没有更新，则认为没有更新公告。避免公告内容页不紧要的排版更新。
-            $no_commit = false;
+            $no_commit = true;
         @unlink($mail_lock);
     }
     @unlink($file_lock);
