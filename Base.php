@@ -612,7 +612,8 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
         if (REMOTE_URL !== '') {
         	$mailbody .= "<br>或者点击查看远程仓库页面：<a href=\"".REMOTE_URL."\">".REMOTE_URL."</a>";
         }
-        $mailbody .= "<hr>收到此邮件说明曾经向我发消息订阅此通知，如不是您本人操作或不想再接收到此通知请回复邮件告诉我，我会进行处理。谢谢";
+        $mailbody .= "<hr>收到此邮件说明曾经订阅此通知，如不是您本人操作或不想再接收到此通知请单独向我发邮件说明或阅读
+                <a href=\"".http://help.mail.163.com/faqDetail.do?code=d7a5dc8471cd0c0e8b4b8f4f8e49998b374173cfe9171305fa1ce630d7f67ac28425c7e6c5a286cc."\">自助退订方法</a>";
 
         if (empty($to)) {
             $to = isset($_ENV["SMTP_MAIL_TO2"])?$_ENV["SMTP_MAIL_TO2"]:"";//附加收件人
