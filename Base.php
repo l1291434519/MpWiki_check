@@ -37,6 +37,7 @@ function http_get($url){
     curl_setopt($oCurl, CURLOPT_URL, $url);
     curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );
     curl_setopt($oCurl, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($oCurl, CURLOPT_TIMEOUT, 10);
     curl_setopt($oCurl, CURLOPT_CUSTOMREQUEST, 'GET');
     curl_setopt($oCurl, CURLOPT_AUTOREFERER, true);
     $sContent = curl_exec($oCurl);
@@ -313,7 +314,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
             //exit;
         }
         $work = true;
-        @unlink($file_lock);
+        unlink($file_lock);
     } elseif (empty($_SESSION['work_time']) || ($stime - $_SESSION['work_time']) > LOCK_TIME){ //保证 LOCK_TIME 秒内只访问一次
         $work = true;
     }
@@ -350,7 +351,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
     $files  =ls_file($path);
     foreach ($files as $file) {
         if (!is_dir($path . $file))
-            @unlink($path . $file);
+            unlink($path . $file);
     }
     $count = 0;
     $ccount = 0;
@@ -369,7 +370,7 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         echo "由于公告页面可能读取失败，等待下次检测。<br>";
         $repo->checkout(".");      //撤销所有修改
         $_SESSION['work_time'] = $stime - LOCK_TIME; //取消检查时间，让检测可在稍后再次发起
-        @unlink($file_lock);
+        unlink($file_lock);
         return false;
     }
     session_write_close(); //解除session，防止使其他访问页面一直等待session
@@ -454,9 +455,9 @@ function get_update_notice($sname,$file_lock,$path,$mail_lock,$remote_git='',$re
         echo "<hr>其他日志：<br>".nl2br(htmlspecialchars($ret0)).$ret2;
         if (!stripos($ret2,'_notice.txt') && $ccount>0) //如果公告列表没有更新，则认为没有更新公告。避免公告内容页不紧要的排版更新。
             $no_commit = true;
-        @unlink($mail_lock);
+        unlink($mail_lock);
     }
-    @unlink($file_lock);
+    unlink($file_lock);
     return !$no_commit;
 }
 
@@ -492,7 +493,7 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
             //exit;
         }
         $work = true;
-        @unlink($file_lock);
+        unlink($file_lock);
     } elseif (empty($_SESSION['work_time']) || ($stime - $_SESSION['work_time']) > LOCK_TIME){ //保证 LOCK_TIME 秒内只访问一次
         $work = true;
     }
@@ -505,9 +506,17 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         return false;
         //exit;
     }
-    session_write_close(); //解除session，防止使其他访问页面一直等待session
 
     echo date("Y-m-d H:i:s") . " 读取列表中...<br>";
+    $list=get_list($base_url);  //获取列表
+    if (count($list)<2) {
+        echo "读取Wiki列表失败，等待下次检测。<br>";
+        $_SESSION['work_time'] = $stime - LOCK_TIME; //取消检查时间，让检测可在稍后再次发起
+        unlink($file_lock);
+        return false;
+    }
+    session_write_close(); //解除session，防止使其他访问页面一直等待session
+
     mk_dir($path);
     if (IS_WIN) {
         Git::windows_mode();
@@ -526,17 +535,17 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         echo date("Y-m-d H:i:s") . " 创建结果：".(Git::is_repo($ret)?'成功':'失败')."<br>";
     }
 
+
     $files  =ls_file($path);
     foreach ($files as $file) {
         if (!is_dir($path . $file))
-            @unlink($path . $file);
+            unlink($path . $file);
     }
     $tmp_arr = parse_url($base_url);
     $url_base = $tmp_arr['scheme'].'://'.$tmp_arr['host'];
 
-    $list=get_list($base_url);  //获取列表
     write($path . 'list.txt',json($list));  //写出列表
-    echo date("Y-m-d H:i:s") . " 读取列表完毕，开始读取内容页...<br>";
+    echo date("Y-m-d H:i:s") . " 读取wiki列表完毕，开始读取内容页...<br>";
     $count=0;
     $content=get_content($base_url);
     write($path . 'index.html',$content);
@@ -579,9 +588,9 @@ function get_update($sname,$file_lock,$base_url,$path,$mail_lock,$remote_git='',
         echo "提交git日志内容如下：<hr>".nl2br(htmlspecialchars($ret));
         $ret2 = $repo->run('log --stat -p -1');
         echo "<hr>其他日志：<br>".nl2br(htmlspecialchars($ret0)).nl2br(htmlspecialchars($ret2));
-        @unlink($mail_lock);
+        unlink($mail_lock);
     }
-    @unlink($file_lock);
+    unlink($file_lock);
     return !$no_commit;
 }
 
@@ -658,11 +667,11 @@ function send_mail($path,$mail_lock,$subject,$to=array()) {
             $mail->clearAllRecipients();
         }
         if($sendRet){
-            @unlink($tmp_file);
+            unlink($tmp_file);
             echo "邮件发送失败,";
             echo "邮件错误信息: " . $mail->ErrorInfo. "<br />";
         } else {
-            @unlink($tmp_file);
+            unlink($tmp_file);
             echo "邮件已发送到邮箱 <br />";
             file_put_contents($mail_lock,'ok');
         }
