@@ -37,7 +37,7 @@ function http_get($url){
     curl_setopt($oCurl, CURLOPT_URL, $url);
     curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );
     curl_setopt($oCurl, CURLOPT_FOLLOWLOCATION, 1);
-    curl_setopt($oCurl, CURLOPT_TIMEOUT, 10);
+    //curl_setopt($oCurl, CURLOPT_TIMEOUT, 10);
     curl_setopt($oCurl, CURLOPT_CUSTOMREQUEST, 'GET');
     curl_setopt($oCurl, CURLOPT_AUTOREFERER, true);
     $sContent = curl_exec($oCurl);
